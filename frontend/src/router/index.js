@@ -15,23 +15,29 @@ const routes = [
   },
   {
     path: '/',
-    name: 'Dashboard',
-    component: () => import('@/views/DashboardView.vue'),
-  },
-  {
-    path: '/measurements',
-    name: 'Measurements',
-    component: () => import('@/views/MeasurementsView.vue'),
-  },
-  {
-    path: '/goals',
-    name: 'Goals',
-    component: () => import('@/views/GoalsView.vue'),
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: () => import('@/views/ProfileView.vue'),
+    component: () => import('@/components/AppLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Dashboard',
+        component: () => import('@/views/DashboardView.vue'),
+      },
+      {
+        path: 'measurements',
+        name: 'Measurements',
+        component: () => import('@/views/MeasurementsView.vue'),
+      },
+      {
+        path: 'goals',
+        name: 'Goals',
+        component: () => import('@/views/GoalsView.vue'),
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('@/views/ProfileView.vue'),
+      },
+    ],
   },
 ]
 
