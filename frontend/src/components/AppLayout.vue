@@ -6,8 +6,8 @@
           <img src="@/assets/health-icon.png" alt="logo" class="w-7 h-7 rounded-lg" />
           <h1 class="text-base font-bold text-gray-800 leading-tight">Мониторинг здоровья</h1>
         </div>
-        <p v-if="authStore.user" class="text-xs text-gray-500 mt-1 truncate pl-[1.6rem]">
-          {{ authStore.user.email }}
+        <p v-if="authStore.user" class="text-xs text-gray-500 mt-1 truncate pl-[2.4rem]">
+          {{ authStore.user.profile_name || authStore.user.email }}
         </p>
       </div>
 

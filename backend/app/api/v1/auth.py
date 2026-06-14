@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 from app.core.deps import get_current_user
@@ -76,5 +77,14 @@ async def refresh(data: RefreshIn, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/me", response_model=UserOut)
-async def me(current_user: User = Depends(get_current_user)):
-    return current_user
+async def me(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(User).where(User.id == current_user.id).options(selectinload(User.profile))
+    )
+    user = result.scalar_one()
+    return UserOut(
+        id=user.id,
+        email=user.email,
+        created_at=user.created_at,
+        profile_name=user.profile.name if user.profile else None,
+    )
