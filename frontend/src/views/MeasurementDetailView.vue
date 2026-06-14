@@ -31,7 +31,7 @@
 
         <Column header="Значение">
           <template #body="{ data }">
-            {{ data.value }}
+            {{ formatValue(data.value, data.type.key) }}
             <template v-if="data.secondary_value"> / {{ data.secondary_value }}</template>
             {{ data.type.unit }}
           </template>
@@ -67,6 +67,12 @@ function formatDate(iso) {
   return new Date(iso).toLocaleString('ru-RU', {
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
   })
+}
+
+function formatValue(value, typeKey) {
+  if (typeKey === 'steps') return Math.round(value).toLocaleString('ru-RU')
+  if (typeKey === 'temperature') return Number(value).toFixed(1)
+  return value
 }
 
 onMounted(async () => {
