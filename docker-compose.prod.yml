@@ -3,27 +3,33 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-health_db}
-      POSTGRES_USER: ${POSTGRES_USER:-health_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-health_pass}
+      POSTGRES_DB: health_db
+      POSTGRES_USER: health_user
+      POSTGRES_PASSWORD: health_pass
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-health_user}"]
+      test: ["CMD-SHELL", "pg_isready -U health_user"]
       interval: 5s
       timeout: 5s
       retries: 10
 
   backend:
-    build: ./backend
+    image: ghcr.io/mariyadymova06-star/health-app-backend:latest
     restart: unless-stopped
-    env_file: ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://health_user:health_pass@db:5432/health_db
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      CORS_ORIGINS: '["http://localhost"]'
+    env_file: .env
     depends_on:
       db:
         condition: service_healthy
 
   frontend:
-    build: ./frontend
+    image: ghcr.io/mariyadymova06-star/health-app-frontend:latest
     restart: unless-stopped
     ports:
       - "80:80"
