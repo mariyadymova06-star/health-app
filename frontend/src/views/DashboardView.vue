@@ -5,11 +5,11 @@
     </div>
 
     <template v-else-if="store.summary">
-      <div v-if="store.summary.bmi" class="bg-blue-50 border border-blue-200 rounded-xl px-6 py-4 flex items-center gap-4">
-        <div class="text-3xl font-bold text-blue-700">{{ store.summary.bmi }}</div>
+      <div v-if="store.summary.bmi" class="bg-green-50 border border-green-200 rounded-xl px-6 py-4 flex items-center gap-4">
+        <div class="text-3xl font-bold text-green-700">{{ store.summary.bmi }}</div>
         <div>
-          <div class="font-medium text-blue-800">Индекс массы тела (ИМТ)</div>
-          <div class="text-sm text-blue-600">{{ bmiLabel(store.summary.bmi) }}</div>
+          <div class="font-medium text-green-800">Индекс массы тела (ИМТ)</div>
+          <div class="text-sm text-green-600">{{ bmiLabel(store.summary.bmi) }}</div>
         </div>
       </div>
 
@@ -17,12 +17,13 @@
         <div
           v-for="metric in store.summary.metrics"
           :key="metric.type_key"
-          class="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-2"
+          class="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-2 cursor-pointer hover:border-green-300 hover:shadow-sm transition-all"
+          @click="router.push('/measurements/' + metric.type_key)"
         >
           <div class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ metric.name }}</div>
           <div class="flex items-end gap-1">
             <span class="text-2xl font-bold text-gray-800">
-              {{ metric.value }}
+              {{ formatValue(metric.value, metric.type_key) }}
               <template v-if="metric.secondary_value"> / {{ metric.secondary_value }}</template>
             </span>
             <span class="text-sm text-gray-400 mb-0.5">{{ metric.unit }}</span>
@@ -40,7 +41,7 @@
               :key="d"
               @click="loadChart(d)"
               class="px-3 py-1 text-sm rounded-lg transition-colors"
-              :class="activeDays === d ? 'bg-primary-100 text-primary-700 font-medium' : 'text-gray-500 hover:bg-gray-100'"
+              :class="activeDays === d ? 'bg-green-100 text-green-700 font-medium' : 'text-gray-500 hover:bg-gray-100'"
             >
               {{ d }} дн.
             </button>
@@ -64,27 +65,42 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDashboardStore } from '@/stores/dashboard'
 import ProgressSpinner from 'primevue/progressspinner'
 
 const store = useDashboardStore()
+const router = useRouter()
 const activeDays = ref(30)
 const dayOptions = [7, 30, 90]
 
 const chart = computed(() => store.chart)
 
-const chartOptions = computed(() => ({
-  chart: { toolbar: { show: false }, fontFamily: 'inherit' },
-  xaxis: {
-    categories: chart.value?.points.map(p => formatDate(p.measured_at)) ?? [],
-    labels: { style: { fontSize: '11px' } },
-  },
-  yaxis: { labels: { style: { fontSize: '11px' } } },
-  colors: ['#6366f1'],
-  plotOptions: { bar: { borderRadius: 4 } },
-  dataLabels: { enabled: false },
-  grid: { borderColor: '#f1f5f9' },
-}))
+const chartOptions = computed(() => {
+  const points = chart.value?.points ?? []
+  const values = points.map(p => p.value)
+  const minVal = values.length ? Math.min(...values) : 0
+  const maxVal = values.length ? Math.max(...values) : 100
+  const range = maxVal - minVal || 1
+  const padding = range * 0.25
+
+  return {
+    chart: { toolbar: { show: false }, fontFamily: 'inherit' },
+    xaxis: {
+      categories: points.map(p => formatDate(p.measured_at)),
+      labels: { style: { fontSize: '11px' } },
+    },
+    yaxis: {
+      min: Math.floor(minVal - padding),
+      max: Math.ceil(maxVal + padding),
+      labels: { style: { fontSize: '11px' } },
+    },
+    colors: ['#22c55e'],
+    plotOptions: { bar: { borderRadius: 4 } },
+    dataLabels: { enabled: false },
+    grid: { borderColor: '#f1f5f9' },
+  }
+})
 
 const chartSeries = computed(() => [
   { name: chart.value?.name ?? '', data: chart.value?.points.map(p => p.value) ?? [] },
@@ -92,6 +108,12 @@ const chartSeries = computed(() => [
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
+}
+
+function formatValue(value, typeKey) {
+  if (typeKey === 'steps') return Math.round(value).toLocaleString('ru-RU')
+  if (typeKey === 'temperature') return Number(value).toFixed(1)
+  return value
 }
 
 function bmiLabel(bmi) {
