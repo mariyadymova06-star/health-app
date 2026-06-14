@@ -41,10 +41,10 @@ USERS = [
             "blood_pressure": {"base": 118.0, "trend": -0.02, "std": 5.0,  "freq": 0.8, "base2": 76.0, "std2": 3.0},
             "heart_rate":     {"base": 72.0,  "trend":  0.0,  "std": 4.0,  "freq": 0.9},
             "sleep":          {"base": 7.2,   "trend":  0.0,  "std": 0.8,  "freq": 0.9},
-            "steps":          {"base": 8500,  "trend":  20.0, "std": 2000, "freq": 0.85},
+            "steps":          {"base": 8500,  "trend":  20.0, "std": 2000, "freq": 0.85, "precision": 0},
             "blood_glucose":  {"base": 5.1,   "trend":  0.0,  "std": 0.3,  "freq": 0.5},
             "spo2":           {"base": 98.0,  "trend":  0.0,  "std": 0.5,  "freq": 0.4},
-            "temperature":    {"base": 36.6,  "trend":  0.0,  "std": 0.15, "freq": 0.35},
+            "temperature":    {"base": 36.6,  "trend":  0.0,  "std": 0.15, "freq": 0.35, "precision": 1},
         },
         "goals": [
             {"type_key": "weight",      "start_value": 72.0, "target_value": 65.0, "end_date": date(2026, 9, 1)},
@@ -66,10 +66,10 @@ USERS = [
             "blood_pressure": {"base": 128.0, "trend": -0.03, "std": 6.0,  "freq": 0.75, "base2": 84.0, "std2": 4.0},
             "heart_rate":     {"base": 65.0,  "trend":  0.0,  "std": 5.0,  "freq": 0.85},
             "sleep":          {"base": 6.8,   "trend":  0.0,  "std": 1.0,  "freq": 0.85},
-            "steps":          {"base": 11000, "trend":  15.0, "std": 2500, "freq": 0.8},
+            "steps":          {"base": 11000, "trend":  15.0, "std": 2500, "freq": 0.8,  "precision": 0},
             "blood_glucose":  {"base": 5.5,   "trend":  0.0,  "std": 0.4,  "freq": 0.45},
             "spo2":           {"base": 97.5,  "trend":  0.0,  "std": 0.5,  "freq": 0.4},
-            "temperature":    {"base": 36.7,  "trend":  0.0,  "std": 0.15, "freq": 0.3},
+            "temperature":    {"base": 36.7,  "trend":  0.0,  "std": 0.15, "freq": 0.3,  "precision": 1},
         },
         "goals": [
             {"type_key": "weight",      "start_value": 88.0, "target_value": 82.0, "end_date": date(2026, 10, 1)},
@@ -91,10 +91,10 @@ USERS = [
             "blood_pressure": {"base": 135.0, "trend": -0.04, "std": 7.0,  "freq": 0.85, "base2": 88.0, "std2": 5.0},
             "heart_rate":     {"base": 78.0,  "trend": -0.01, "std": 5.0,  "freq": 0.9},
             "sleep":          {"base": 6.5,   "trend":  0.01, "std": 0.9,  "freq": 0.88},
-            "steps":          {"base": 6500,  "trend":  10.0, "std": 1500, "freq": 0.8},
+            "steps":          {"base": 6500,  "trend":  10.0, "std": 1500, "freq": 0.8,  "precision": 0},
             "blood_glucose":  {"base": 5.8,   "trend":  0.0,  "std": 0.5,  "freq": 0.7},
             "spo2":           {"base": 97.0,  "trend":  0.0,  "std": 0.6,  "freq": 0.5},
-            "temperature":    {"base": 36.5,  "trend":  0.0,  "std": 0.2,  "freq": 0.4},
+            "temperature":    {"base": 36.5,  "trend":  0.0,  "std": 0.2,  "freq": 0.4,  "precision": 1},
         },
         "goals": [
             {"type_key": "blood_pressure","start_value": 135, "target_value": 120, "end_date": date(2026, 9, 15)},
@@ -107,7 +107,9 @@ USERS = [
 
 def generate_value(day_index: int, cfg: dict) -> float:
     value = cfg["base"] + cfg["trend"] * day_index + random.gauss(0, cfg["std"])
-    return round(max(value, 1), 2)
+    precision = cfg.get("precision", 2)
+    result = round(max(value, 1), precision)
+    return int(result) if precision == 0 else result
 
 
 async def seed():
