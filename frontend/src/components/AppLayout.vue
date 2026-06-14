@@ -1,9 +1,12 @@
 <template>
   <div class="flex min-h-screen bg-gray-50">
     <aside class="w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full">
-      <div class="px-6 py-5 border-b border-gray-200">
-        <h1 class="text-lg font-bold text-gray-800">Мониторинг здоровья</h1>
-        <p v-if="authStore.user" class="text-xs text-gray-500 mt-1 truncate">
+      <div class="px-6 h-20 flex flex-col justify-center border-b border-gray-200">
+        <div class="flex items-center gap-2.5">
+          <img src="@/assets/health-icon.png" alt="logo" class="w-7 h-7 rounded-lg" />
+          <h1 class="text-base font-bold text-gray-800 leading-tight">Мониторинг здоровья</h1>
+        </div>
+        <p v-if="authStore.user" class="text-xs text-gray-500 mt-1 truncate pl-[1.6rem]">
           {{ authStore.user.email }}
         </p>
       </div>
@@ -15,7 +18,7 @@
           :to="item.to"
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
           :class="isActive(item.to)
-            ? 'bg-primary-50 text-primary-700'
+            ? 'bg-green-50 text-green-700'
             : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'"
         >
           <i :class="item.icon" class="text-base w-5 text-center" />
@@ -35,7 +38,7 @@
     </aside>
 
     <main class="ml-64 flex-1 flex flex-col">
-      <header class="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-10">
+      <header class="bg-white border-b border-gray-200 px-8 h-20 flex items-center sticky top-0 z-10">
         <h2 class="text-lg font-semibold text-gray-800">{{ currentTitle }}</h2>
       </header>
 
@@ -62,14 +65,13 @@ const navItems = [
   { to: '/profile', label: 'Профиль', icon: 'pi pi-user' },
 ]
 
-const titles = {
-  '/': 'Дашборд',
-  '/measurements': 'Измерения',
-  '/goals': 'Цели',
-  '/profile': 'Профиль',
-}
-
-const currentTitle = computed(() => titles[route.path] ?? '')
+const currentTitle = computed(() => {
+  if (route.path === '/') return 'Дашборд'
+  if (route.path.startsWith('/measurements')) return 'Измерения'
+  if (route.path.startsWith('/goals')) return 'Цели'
+  if (route.path.startsWith('/profile')) return 'Профиль'
+  return ''
+})
 
 function isActive(to) {
   return to === '/' ? route.path === '/' : route.path.startsWith(to)
