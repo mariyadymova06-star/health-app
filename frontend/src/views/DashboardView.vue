@@ -23,7 +23,7 @@
           <div class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ metric.name }}</div>
           <div class="flex items-end gap-1">
             <span class="text-2xl font-bold text-gray-800">
-              {{ metric.value }}
+              {{ formatValue(metric.value, metric.type_key) }}
               <template v-if="metric.secondary_value"> / {{ metric.secondary_value }}</template>
             </span>
             <span class="text-sm text-gray-400 mb-0.5">{{ metric.unit }}</span>
@@ -76,18 +76,31 @@ const dayOptions = [7, 30, 90]
 
 const chart = computed(() => store.chart)
 
-const chartOptions = computed(() => ({
-  chart: { toolbar: { show: false }, fontFamily: 'inherit' },
-  xaxis: {
-    categories: chart.value?.points.map(p => formatDate(p.measured_at)) ?? [],
-    labels: { style: { fontSize: '11px' } },
-  },
-  yaxis: { labels: { style: { fontSize: '11px' } } },
-  colors: ['#22c55e'],
-  plotOptions: { bar: { borderRadius: 4 } },
-  dataLabels: { enabled: false },
-  grid: { borderColor: '#f1f5f9' },
-}))
+const chartOptions = computed(() => {
+  const points = chart.value?.points ?? []
+  const values = points.map(p => p.value)
+  const minVal = values.length ? Math.min(...values) : 0
+  const maxVal = values.length ? Math.max(...values) : 100
+  const range = maxVal - minVal || 1
+  const padding = range * 0.25
+
+  return {
+    chart: { toolbar: { show: false }, fontFamily: 'inherit' },
+    xaxis: {
+      categories: points.map(p => formatDate(p.measured_at)),
+      labels: { style: { fontSize: '11px' } },
+    },
+    yaxis: {
+      min: Math.floor(minVal - padding),
+      max: Math.ceil(maxVal + padding),
+      labels: { style: { fontSize: '11px' } },
+    },
+    colors: ['#22c55e'],
+    plotOptions: { bar: { borderRadius: 4 } },
+    dataLabels: { enabled: false },
+    grid: { borderColor: '#f1f5f9' },
+  }
+})
 
 const chartSeries = computed(() => [
   { name: chart.value?.name ?? '', data: chart.value?.points.map(p => p.value) ?? [] },
@@ -95,6 +108,12 @@ const chartSeries = computed(() => [
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
+}
+
+function formatValue(value, typeKey) {
+  if (typeKey === 'steps') return Math.round(value).toLocaleString('ru-RU')
+  if (typeKey === 'temperature') return Number(value).toFixed(1)
+  return value
 }
 
 function bmiLabel(bmi) {
