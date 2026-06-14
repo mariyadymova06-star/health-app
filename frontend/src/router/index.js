@@ -28,6 +28,11 @@ const routes = [
         component: () => import('@/views/MeasurementsView.vue'),
       },
       {
+        path: 'measurements/:typeKey',
+        name: 'MeasurementDetail',
+        component: () => import('@/views/MeasurementDetailView.vue'),
+      },
+      {
         path: 'goals',
         name: 'Goals',
         component: () => import('@/views/GoalsView.vue'),
